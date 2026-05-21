@@ -71,7 +71,7 @@ describe('runAudit — core business rules', () => {
   // ── Test 2: OPTIMIZE ───────────────────────────────────────────────────────
   it('Optimize: Coding use case with Cursor Pro (team > 5) should check if GitHub Copilot Business is cheaper', () => {
     /**
-     * 6 seats on Cursor Pro = $20 × 6 = $120/mo.
+     * 6 seats on Cursor Individual = $20 × 6 = $120/mo.
      * GitHub Copilot Business = $19 × 6 = $114/mo → $6/mo saving ($72/yr).
      * Engine must surface Copilot Business as the cheaper coding alternative.
      */
@@ -81,7 +81,7 @@ describe('runAudit — core business rules', () => {
       tools: [
         makeToolInput({
           toolName: 'cursor',
-          plan: 'Pro',
+          plan: 'Individual',
           monthlySpend: 120,
           seats: 6,
         }),
@@ -102,8 +102,10 @@ describe('runAudit — core business rules', () => {
   it('Switch: Writing use case on both ChatGPT Plus and Claude Pro should recommend picking one based on spend', () => {
     /**
      * 1 user paying $20/mo for ChatGPT Plus AND $20/mo for Claude Pro.
-     * Both cover 'writing' — full overlap. Drop one, save $20/mo ($240/yr).
-     * Engine must flag at least one tool as 'switch' or 'optimize'.
+     * Both cover 'writing' — full overlap.
+     * Claude (second in list) → optimize: savings = $20/mo (drop redundant tool).
+     * ChatGPT (survivor) → switch to Gemini Plus ($5/seat): savings = $15/mo.
+     * Total monthly savings = $20 + $15 = $35/mo ($420/yr).
      */
     const formData = makeFormData({
       teamSize: 1,
@@ -120,8 +122,8 @@ describe('runAudit — core business rules', () => {
     );
 
     expect(redundantTools.length).toBeGreaterThanOrEqual(1);
-    expect(result.totalMonthlySavings).toBe(20);
-    expect(result.totalAnnualSavings).toBe(240);
+    expect(result.totalMonthlySavings).toBe(35);
+    expect(result.totalAnnualSavings).toBe(420);
   });
 
   // ── Test 4: FLAG ───────────────────────────────────────────────────────────

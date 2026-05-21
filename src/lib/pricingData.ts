@@ -61,42 +61,44 @@ interface ToolPricing {
 export const PRICING: Record<ToolName, ToolPricing> = {
   cursor: {
     plans: [
-      { name: 'Hobby',    monthlyPerSeat: 0  },
-      { name: 'Pro',      monthlyPerSeat: 20 },
-      { name: 'Business', monthlyPerSeat: 40 },
+      { name: 'Hobby', monthlyPerSeat: 0 },
+      { name: 'Individual', monthlyPerSeat: 20 },
+      { name: 'Teams', monthlyPerSeat: 40 },
     ],
-    url: 'https://cursor.sh/pricing',
-    verifiedAt: '2026-05-20',
+    url: 'https://cursor.com/pricing',
+    verifiedAt: '2026-05-21',
   },
 
   'github-copilot': {
     plans: [
       { name: 'Individual', monthlyPerSeat: 10 },
-      { name: 'Business',   monthlyPerSeat: 19 },
+      { name: 'Business', monthlyPerSeat: 19 },
       { name: 'Enterprise', monthlyPerSeat: 39 },
     ],
-    url: 'https://github.com/pricing',
-    verifiedAt: '2026-05-20',
+    url: 'https://github.com/features/copilot/plans',
+    verifiedAt: '2026-05-21',
   },
 
   claude: {
     plans: [
-      { name: 'Free', monthlyPerSeat: 0  },
-      { name: 'Pro',  monthlyPerSeat: 20 },
-      { name: 'Team', monthlyPerSeat: 30 },
+      { name: 'Free', monthlyPerSeat: 0 },
+      { name: 'Pro', monthlyPerSeat: 20 },
+      { name: 'Team', monthlyPerSeat: 25 },
+      { name: 'Max', monthlyPerSeat: 100 },
     ],
-    url: 'https://anthropic.com/pricing',
-    verifiedAt: '2026-05-20',
+    url: 'https://claude.com/pricing',
+    verifiedAt: '2026-05-21',
   },
 
   chatgpt: {
     plans: [
-      { name: 'Free', monthlyPerSeat: 0  },
+      { name: 'Free', monthlyPerSeat: 0 },
       { name: 'Plus', monthlyPerSeat: 20 },
       { name: 'Team', monthlyPerSeat: 30 },
+      { name: 'Pro', monthlyPerSeat: 200 },
     ],
-    url: 'https://openai.com/chatgpt/pricing',
-    verifiedAt: '2026-05-20',
+    url: 'https://chatgpt.com/pricing',
+    verifiedAt: '2026-05-21',
   },
 
   'anthropic-api': {
@@ -108,8 +110,8 @@ export const PRICING: Record<ToolName, ToolPricing> = {
        */
       { name: 'Pay-per-token', monthlyPerSeat: null },
     ],
-    url: 'https://anthropic.com/api',
-    verifiedAt: '2026-05-20',
+    url: 'https://claude.com/pricing#api',
+    verifiedAt: '2026-05-21',
   },
 
   'openai-api': {
@@ -120,27 +122,29 @@ export const PRICING: Record<ToolName, ToolPricing> = {
        */
       { name: 'Pay-per-token', monthlyPerSeat: null },
     ],
-    url: 'https://openai.com/api/pricing',
-    verifiedAt: '2026-05-20',
+    url: 'https://openai.com/api/pricing/',
+    verifiedAt: '2026-05-21',
   },
 
   gemini: {
     plans: [
-      { name: 'Free',    monthlyPerSeat: 0     },
-      { name: 'Advanced', monthlyPerSeat: 19.99 },
+      { name: 'Free', monthlyPerSeat: 0 },
+      { name: 'Plus', monthlyPerSeat: 5 },
+      { name: 'Pro', monthlyPerSeat: 20 },
+      { name: 'Ultra', monthlyPerSeat: 65 },
     ],
-    url: 'https://gemini.google.com/advanced',
-    verifiedAt: '2026-05-20',
+    url: 'https://gemini.google.com/subscriptions/',
+    verifiedAt: '2026-05-21',
   },
 
   windsurf: {
     plans: [
-      { name: 'Free', monthlyPerSeat: 0  },
-      { name: 'Pro',  monthlyPerSeat: 15 },
-      { name: 'Team', monthlyPerSeat: 35 },
+      { name: 'Free', monthlyPerSeat: 0 },
+      { name: 'Pro', monthlyPerSeat: 20 },
+      { name: 'Max', monthlyPerSeat: 200 },
     ],
-    url: 'https://codeium.com/windsurf/pricing',
-    verifiedAt: '2026-05-20',
+    url: 'https://windsurf.com/pricing',
+    verifiedAt: '2026-05-21',
   },
 } as const;
 
@@ -154,14 +158,14 @@ export const PRICING: Record<ToolName, ToolPricing> = {
  * raw slugs (e.g. render "GitHub Copilot", not "github-copilot").
  */
 export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
-  'cursor':          'Cursor',
-  'github-copilot':  'GitHub Copilot',
-  'claude':          'Claude',
-  'chatgpt':         'ChatGPT',
-  'anthropic-api':   'Anthropic API',
-  'openai-api':      'OpenAI API',
-  'gemini':          'Gemini Advanced',
-  'windsurf':        'Windsurf',
+  'cursor': 'Cursor',
+  'github-copilot': 'GitHub Copilot',
+  'claude': 'Claude',
+  'chatgpt': 'ChatGPT',
+  'anthropic-api': 'Anthropic API',
+  'openai-api': 'OpenAI API',
+  'gemini': 'Google Gemini',
+  'windsurf': 'Windsurf',
 } as const;
 
 // ---------------------------------------------------------------------------
