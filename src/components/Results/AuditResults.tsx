@@ -1,7 +1,8 @@
+import { useState, useEffect, useRef } from 'react';
 import { runAudit } from '@/lib/auditEngine';
 import type { AuditFormData, RecommendationType } from '@/lib/types';
 import { TOOL_DISPLAY_NAMES } from '@/lib/pricingData';
-import { CheckCircle2, TrendingDown, AlertCircle, ArrowRight, Building2, Trash2, ArrowDownRight, Eye, CheckCircle } from 'lucide-react';
+import { CheckCircle2, TrendingDown, AlertCircle, ArrowRight, Building2, Trash2, ArrowDownRight, Eye, CheckCircle, Loader2 } from 'lucide-react';
 
 function getSemanticTheme(type: RecommendationType) {
   switch (type) {
@@ -49,6 +50,39 @@ export function AuditResults({ formData }: AuditResultsProps) {
     tr.recommendedAction.toLowerCase().includes('audit your')
   );
 
+  const [summary, setSummary] = useState<string | null>(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(true);
+  const fetched = useRef(false);
+
+  useEffect(() => {
+    if (fetched.current) return;
+    fetched.current = true;
+
+    async function fetchSummary() {
+      try {
+        const response = await fetch('/api/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            teamSize: formData.teamSize,
+            primaryUseCase: formData.useCase,
+            totalMonthlySavings,
+            toolResults,
+          }),
+        });
+        const data = await response.json();
+        setSummary(data.summary);
+      } catch (err) {
+        console.error('Failed to fetch summary:', err);
+        setSummary(`Based on our audit of your ${formData.teamSize}-person team's stack, we identified $${totalMonthlySavings}/mo in optimization opportunities. Please review the specific tool adjustments below.`);
+      } finally {
+        setIsSummaryLoading(false);
+      }
+    }
+    
+    fetchSummary();
+  }, [formData.teamSize, formData.useCase, totalMonthlySavings, toolResults]);
+
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 pb-20 pt-8">
       {/* ── Hero Section ───────────────────────────────────────────────────── */}
@@ -82,6 +116,22 @@ export function AuditResults({ formData }: AuditResultsProps) {
             <CheckCircle2 size={18} />
             You&apos;re spending well.
           </div>
+        )}
+      </section>
+
+      {/* ── CFO Summary ────────────────────────────────────────────────────── */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <h2 className="mb-4 text-lg font-bold text-slate-900">Executive Summary</h2>
+        {isSummaryLoading ? (
+          <div className="space-y-3">
+            <div className="h-4 w-full animate-pulse rounded bg-slate-100"></div>
+            <div className="h-4 w-5/6 animate-pulse rounded bg-slate-100"></div>
+            <div className="h-4 w-4/6 animate-pulse rounded bg-slate-100"></div>
+          </div>
+        ) : (
+          <p className="text-sm leading-relaxed text-slate-600 sm:text-base">
+            {summary}
+          </p>
         )}
       </section>
 
