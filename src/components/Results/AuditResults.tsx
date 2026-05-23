@@ -1,7 +1,38 @@
 import { runAudit } from '@/lib/auditEngine';
-import type { AuditFormData } from '@/lib/types';
+import type { AuditFormData, RecommendationType } from '@/lib/types';
 import { TOOL_DISPLAY_NAMES } from '@/lib/pricingData';
-import { CheckCircle2, TrendingDown, AlertCircle, ArrowRight, Building2 } from 'lucide-react';
+import { CheckCircle2, TrendingDown, AlertCircle, ArrowRight, Building2, Trash2, ArrowDownRight, Eye, CheckCircle } from 'lucide-react';
+
+function getSemanticTheme(type: RecommendationType) {
+  switch (type) {
+    case 'optimize':
+    case 'switch':
+      return {
+        tag: 'bg-rose-50 text-rose-700',
+        icon: Trash2,
+        label: 'Drop',
+      };
+    case 'downgrade':
+      return {
+        tag: 'bg-amber-50 text-amber-700',
+        icon: ArrowDownRight,
+        label: 'Downgrade',
+      };
+    case 'flag':
+      return {
+        tag: 'bg-indigo-50 text-indigo-700',
+        icon: Eye,
+        label: 'Review',
+      };
+    case 'already-optimal':
+    default:
+      return {
+        tag: 'bg-emerald-50 text-emerald-700',
+        icon: CheckCircle,
+        label: 'Optimal',
+      };
+  }
+}
 
 interface AuditResultsProps {
   formData: AuditFormData;
@@ -21,21 +52,37 @@ export function AuditResults({ formData }: AuditResultsProps) {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 pb-20 pt-8">
       {/* ── Hero Section ───────────────────────────────────────────────────── */}
-      <section className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm sm:p-16">
-        <h1 className="mb-4 text-sm font-semibold uppercase tracking-widest text-slate-500">
-          Identified Savings
-        </h1>
-        <div className="flex flex-col items-center justify-center gap-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-6xl font-extrabold tracking-tight text-slate-900 sm:text-7xl">
-              ${totalMonthlySavings.toLocaleString()}
-            </span>
-            <span className="text-xl font-medium text-slate-500">/mo</span>
+      <section className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-10 shadow-sm sm:p-16">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16">
+          <div className="flex flex-col items-center">
+            <h2 className="mb-2 text-sm font-semibold uppercase tracking-widest text-slate-500">
+              Monthly Savings
+            </h2>
+            <div className="flex items-baseline gap-1">
+              <span className="text-6xl font-extrabold tracking-tight text-slate-900 sm:text-7xl">
+                ${totalMonthlySavings.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+              </span>
+            </div>
           </div>
-          <p className="text-lg font-medium text-emerald-600 sm:text-xl">
-            ${totalAnnualSavings.toLocaleString()} saved annually
-          </p>
+          <div className="hidden h-24 w-px bg-slate-200 sm:block"></div>
+          <div className="flex flex-col items-center">
+            <h2 className="mb-2 text-sm font-semibold uppercase tracking-widest text-emerald-600">
+              Annual Savings
+            </h2>
+            <div className="flex items-baseline gap-1">
+              <span className="text-6xl font-extrabold tracking-tight text-emerald-600 sm:text-7xl">
+                ${totalAnnualSavings.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
         </div>
+        
+        {totalMonthlySavings < 100 && (
+          <div className="mt-10 flex items-center gap-2 rounded-full bg-emerald-50 px-5 py-2 text-base font-bold text-emerald-700 border border-emerald-200 shadow-sm">
+            <CheckCircle2 size={18} />
+            You&apos;re spending well.
+          </div>
+        )}
       </section>
 
       {/* ── Conditional CTA ────────────────────────────────────────────────── */}
@@ -65,19 +112,27 @@ export function AuditResults({ formData }: AuditResultsProps) {
         </section>
       )}
 
-      {!hasAnomalies && totalMonthlySavings < 100 && (
-        <section className="flex items-start gap-4 rounded-xl border border-emerald-100 bg-emerald-50 p-6 shadow-sm">
-          <div className="mt-0.5 rounded-full bg-emerald-100 p-1.5">
-            <CheckCircle2 size={20} className="text-emerald-600" />
+      {totalMonthlySavings < 100 && (
+        <section className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 rounded-xl border border-emerald-100 bg-emerald-50 p-6 sm:p-8 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="mt-0.5 rounded-full bg-emerald-100 p-1.5">
+              <CheckCircle2 size={20} className="text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="mb-1 text-lg font-bold text-slate-900">
+                You&apos;re spending well.
+              </h2>
+              <p className="text-sm leading-relaxed text-slate-600 max-w-lg">
+                Your stack is highly optimized. We couldn&apos;t find any major overlapping subscriptions or overpriced tiers based on your current team size and use-case.
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="mb-1 text-base font-bold text-slate-900">
-              You&apos;re spending well
-            </h2>
-            <p className="text-sm text-slate-600">
-              Your stack is highly optimized. We couldn&apos;t find any major overlapping subscriptions or overpriced tiers based on your current team size and use-case.
-            </p>
-          </div>
+          <button
+            type="button"
+            className="flex whitespace-nowrap items-center justify-center gap-2 rounded-md bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 w-full lg:w-auto"
+          >
+            notify me when new optimizations apply to your stack
+          </button>
         </section>
       )}
 
@@ -105,13 +160,12 @@ export function AuditResults({ formData }: AuditResultsProps) {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {toolResults.map((tr, idx) => {
             const displayName = TOOL_DISPLAY_NAMES[tr.toolName] || tr.toolName;
-            const isFlag = tr.recommendationType === 'flag';
-            const isOptimal = tr.recommendationType === 'already-optimal';
+            const theme = getSemanticTheme(tr.recommendationType);
             
             return (
               <article
                 key={`${tr.toolName}-${idx}`}
-                className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
+                className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:border-slate-300 hover:shadow-md cursor-default"
               >
                 <div>
                   <div className="mb-4 flex items-start justify-between">
@@ -123,24 +177,10 @@ export function AuditResults({ formData }: AuditResultsProps) {
                         Current Spend: ${tr.currentSpend.toLocaleString()}/mo
                       </p>
                     </div>
-                    {tr.savings > 0 && (
-                      <div className="flex items-center gap-1 rounded-md bg-emerald-50 px-2.5 py-1 text-sm font-semibold text-emerald-700">
-                        <TrendingDown size={14} />
-                        ${tr.savings.toLocaleString()}/mo
-                      </div>
-                    )}
-                    {isFlag && (
-                      <div className="flex items-center gap-1 rounded-md bg-amber-50 px-2.5 py-1 text-sm font-semibold text-amber-700">
-                        <AlertCircle size={14} />
-                        Review
-                      </div>
-                    )}
-                    {isOptimal && (
-                      <div className="flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-600">
-                        <CheckCircle2 size={14} />
-                        Optimal
-                      </div>
-                    )}
+                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${theme.tag}`}>
+                      <theme.icon size={16} />
+                      {tr.savings > 0 ? `$${tr.savings.toLocaleString()}/mo` : theme.label}
+                    </div>
                   </div>
 
                   <h4 className="mb-2 text-sm font-bold text-slate-900">
