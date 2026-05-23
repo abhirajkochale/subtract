@@ -31,3 +31,10 @@ Following the strict "Pricing data accuracy matters" ground rule, I also conduct
 **What I learned:** Handling client-side `localStorage` in a Next.js App Router environment requires a robust mount-check hook. I also learned how crucial `aria-labels`, `role="status"`, and semantic HTML are on dynamic UI array elements to guarantee we pass the >90 Lighthouse accessibility threshold required by the assignment.
 **Blockers / what I'm stuck on:** Managing the cascading dropdown state—specifically ensuring that when a user switches a tool, the previously selected plan resets so the `<select>` never enters an invalid state—was tricky to handle within a dynamic React array, but I resolved it by wrapping the reset logic in the row component.
 **Plan for tomorrow:** Connect this persisting frontend state directly to the Day 2 Audit Engine to calculate the math, and build out the comprehensive Audit Results Dashboard UI.
+
+## Day 4 2026-05-23
+**Hours worked:** 3
+**What I did:** Executed a major refactor of `src/lib/auditEngine.ts` to enforce a strict evaluation hierarchy. I built the highest-priority "Ghost Seats" rule (evaluating if `tool.seats > teamSize`) and a strict category-based "Redundant Tool" check mapping tools into discrete buckets (General LLMs, Coding Assistants, APIs) via a pre-pass `redundantPrimaryMap`. I validated the new logic hierarchy by running the Vitest suite, keeping all 5 core tests green. Finally, I connected these refined outputs to the `<AuditResults />` dashboard to trigger the conditional UI warning banners.
+**What I learned:** Enforcing a strict operational order (Ghost Seats → Redundancy → Downgrades) is critical for accurate financial auditing. Relying on strict category mapping is much safer than loose use-case matching to prevent false-positive redundancy flags.
+**Blockers / what I'm stuck on:** None. The math engine is perfectly outputting the exact data models the frontend UI expects.
+**Plan for tomorrow:** Implement MVP Feature 4 by integrating the Anthropic API to generate a personalized CFO-style summary, ensuring a graceful template fallback is in place for API timeouts.

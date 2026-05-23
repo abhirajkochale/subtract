@@ -151,10 +151,43 @@ function evaluateTool(
   tool: ToolInput,
   useCase: string,
   stackToolNames: Set<ToolName>,
-  isRedundant: boolean,
+  redundantPrimaryTool: ToolName | null,
+  teamSize: number,
 ): ToolAuditResult {
   const displayName = TOOL_DISPLAY_NAMES[tool.toolName];
   const publishedPricePerSeat = getPublishedPricePerSeat(tool);
+
+  // ── Rule 1: GHOST SEATS (Highest Priority) ──────────────────────────────
+  if (teamSize && teamSize > 0 && tool.seats > teamSize) {
+    const extraSeats = tool.seats - teamSize;
+    const saving = extraSeats * (tool.monthlySpend / tool.seats);
+    if (saving > 0) {
+      return {
+        toolName: tool.toolName,
+        currentSpend: tool.monthlySpend,
+        recommendationType: 'optimize',
+        recommendedAction: `Cancel ${extraSeats} unused seat${extraSeats > 1 ? 's' : ''}`,
+        savings: Math.round(saving * 100) / 100,
+        annualSavings: Math.round(saving * 12 * 100) / 100,
+        reason: `You are paying for ${extraSeats} ghost seats. Your team size is ${teamSize}, but you have ${tool.seats} seats billed. Cancel the unused seats immediately.`,
+      };
+    }
+  }
+
+  // ── Rule 2: REDUNDANT TOOL (Second Priority) ────────────────────────────
+  if (redundantPrimaryTool && tool.monthlySpend > 0) {
+    const primaryDisplayName = TOOL_DISPLAY_NAMES[redundantPrimaryTool];
+    return {
+      toolName: tool.toolName,
+      currentSpend: tool.monthlySpend,
+      recommendationType: 'optimize',
+      recommendedAction: `Drop ${displayName}`,
+      savings: Math.round(tool.monthlySpend * 100) / 100,
+      annualSavings: Math.round(tool.monthlySpend * 12 * 100) / 100,
+      alternativeTool: redundantPrimaryTool,
+      reason: `Consolidate your stack. You are already paying for ${primaryDisplayName}; you do not need ${displayName} for the same use case.`,
+    };
+  }
 
   // ── Usage-based tools (monthlyPerSeat === null) ──────────────────────────
   // We cannot compare seat costs, so we simply flag the spend for review.
@@ -240,36 +273,7 @@ function evaluateTool(
     }
   }
 
-  // ── Rule 3: OPTIMIZE — redundant subscription in the same use-case ─────
-  // PRIORITY: Checked BEFORE the switch rule because consolidating within the
-  // existing stack is a better recommendation than switching to an external tool.
-  // Only fires for tools the pre-pass identified as `isRedundant` — ensuring
-  // the FIRST tool covering a use-case passes through to already-optimal while
-  // only the SECOND gets marked optimize (preventing double-counted savings).
-  if (tool.monthlySpend > 0 && isRedundant) {
-    for (const otherToolName of stackToolNames) {
-      if (!useCaseMatches(otherToolName, useCase)) continue;
-      if (!useCaseMatches(tool.toolName, useCase)) continue;
 
-      const otherDisplayName = TOOL_DISPLAY_NAMES[otherToolName];
-      const saving = tool.monthlySpend;
-
-      return {
-        toolName: tool.toolName,
-        currentSpend: tool.monthlySpend,
-        recommendationType: 'optimize',
-        recommendedAction: `Consider dropping ${displayName} — ${otherDisplayName} already covers this use-case`,
-        savings: Math.round(saving * 100) / 100,
-        annualSavings: Math.round(saving * 12 * 100) / 100,
-        alternativeTool: otherToolName,
-        reason:
-          `${displayName} and ${otherDisplayName} both cover '${useCase}'. ` +
-          `You can consolidate onto ${otherDisplayName} and eliminate the ` +
-          `$${tool.monthlySpend}/mo spend on ${displayName}, ` +
-          `saving $${Math.round(saving)}/mo ($${Math.round(saving * 12)}/yr).`,
-      };
-    }
-  }
 
   // ── Rule 4: SWITCH — cheaper alternative tool for the same use-case ─────
   // Only runs when no in-stack overlap was found (optimize didn't fire) and
@@ -344,22 +348,30 @@ export function runAudit(formData: AuditFormData): AuditResult {
 
   const allEnabledNames = new Set<ToolName>(enabledTools.map(t => t.toolName));
 
-  // ── Pre-pass: identify redundant tools ──────────────────────────────────
-  // For each use-case, the FIRST tool in form order that covers it is the
-  // "survivor". Every subsequent tool covering the SAME use-case is redundant.
-  // Only redundant tools are eligible for the optimize rule. This prevents
-  // double-counting savings when two tools share a use-case.
-  const redundantTools = new Set<ToolName>();
-  const useCaseSurvivor = new Map<string, ToolName>();
+  // ── Pre-pass: identify redundant tools via static categories ────────────
+  const CATEGORIES: Record<ToolName, string> = {
+    chatgpt: 'General LLMs',
+    claude: 'General LLMs',
+    gemini: 'General LLMs',
+    cursor: 'Coding Assistants',
+    'github-copilot': 'Coding Assistants',
+    windsurf: 'Coding Assistants',
+    'openai-api': 'APIs',
+    'anthropic-api': 'APIs',
+  };
+
+  const redundantPrimaryMap = new Map<ToolName, ToolName>();
+  const categorySurvivor = new Map<string, ToolName>();
 
   for (const tool of enabledTools) {
-    if (!useCaseMatches(tool.toolName, formData.useCase)) continue;
-    const existing = useCaseSurvivor.get(formData.useCase);
+    const category = CATEGORIES[tool.toolName];
+    if (!category) continue;
+
+    const existing = categorySurvivor.get(category);
     if (existing && existing !== tool.toolName) {
-      // This tool is the second (or later) covering this use-case → redundant
-      redundantTools.add(tool.toolName);
+      redundantPrimaryMap.set(tool.toolName, existing);
     } else if (!existing) {
-      useCaseSurvivor.set(formData.useCase, tool.toolName);
+      categorySurvivor.set(category, tool.toolName);
     }
   }
 
@@ -367,9 +379,8 @@ export function runAudit(formData: AuditFormData): AuditResult {
     const otherTools = new Set(allEnabledNames);
     otherTools.delete(tool.toolName);
 
-    // Only tools in `redundantTools` are eligible for the optimize rule
-    const isRedundant = redundantTools.has(tool.toolName);
-    return evaluateTool(tool, formData.useCase, otherTools, isRedundant);
+    const redundantPrimary = redundantPrimaryMap.get(tool.toolName) || null;
+    return evaluateTool(tool, formData.useCase, otherTools, redundantPrimary, formData.teamSize);
   });
 
   const totalMonthlySavings =
