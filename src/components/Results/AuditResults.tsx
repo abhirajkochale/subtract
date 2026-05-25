@@ -1,9 +1,12 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { runAudit } from '@/lib/auditEngine';
-import type { AuditFormData, RecommendationType } from '@/lib/types';
+import type { AuditFormData, RecommendationType, AuditResult } from '@/lib/types';
 import { TOOL_DISPLAY_NAMES } from '@/lib/pricingData';
 import { CheckCircle2, TrendingDown, AlertCircle, ArrowRight, Building2, Trash2, ArrowDownRight, Eye, CheckCircle, Loader2 } from 'lucide-react';
 import { LeadCapture } from '@/components/LeadCapture';
+import { ShareWidget } from './ShareWidget';
 
 function getSemanticTheme(type: RecommendationType) {
   switch (type) {
@@ -37,17 +40,21 @@ function getSemanticTheme(type: RecommendationType) {
 }
 
 interface AuditResultsProps {
-  formData: AuditFormData;
+  formData?: AuditFormData;
+  preCalculatedResult?: AuditResult;
 }
 
-export function AuditResults({ formData }: AuditResultsProps) {
-  // Run the engine
-  const result = runAudit(formData);
+export function AuditResults({ formData, preCalculatedResult }: AuditResultsProps) {
+  // If we have a pre-calculated result (e.g. from the shareable link), use it.
+  // Otherwise, run the engine on the formData.
+  const result = preCalculatedResult || (formData ? runAudit(formData) : null);
 
-  const { totalMonthlySavings, totalAnnualSavings, toolResults } = result;
+  if (!result) return null;
 
-  const hasAnomalies = toolResults.some(tr => 
-    tr.reason.toLowerCase().includes('anomaly') || 
+  const { totalMonthlySavings, totalAnnualSavings, toolResults, formData: finalFormData } = result;
+
+  const hasAnomalies = toolResults.some(tr =>
+    tr.reason.toLowerCase().includes('anomaly') ||
     tr.recommendedAction.toLowerCase().includes('audit your')
   );
 
@@ -65,8 +72,8 @@ export function AuditResults({ formData }: AuditResultsProps) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            teamSize: formData.teamSize,
-            primaryUseCase: formData.useCase,
+            teamSize: finalFormData.teamSize,
+            primaryUseCase: finalFormData.useCase,
             totalMonthlySavings,
             toolResults,
           }),
@@ -75,19 +82,22 @@ export function AuditResults({ formData }: AuditResultsProps) {
         setSummary(data.summary);
       } catch (err) {
         console.error('Failed to fetch summary:', err);
-        setSummary(`Based on our audit of your ${formData.teamSize}-person team's stack, we identified $${totalMonthlySavings}/mo in optimization opportunities. Please review the specific tool adjustments below.`);
+        setSummary(`Based on our audit of your ${finalFormData.teamSize}-person team's stack, we identified $${totalMonthlySavings}/mo in optimization opportunities. Please review the specific tool adjustments below.`);
       } finally {
         setIsSummaryLoading(false);
       }
     }
-    
+
     fetchSummary();
-  }, [formData.teamSize, formData.useCase, totalMonthlySavings, toolResults]);
+  }, [finalFormData.teamSize, finalFormData.useCase, totalMonthlySavings, toolResults]);
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 pb-20 pt-8">
       {/* ── Hero Section ───────────────────────────────────────────────────── */}
-      <section className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-10 shadow-sm sm:p-16">
+      <section className="relative flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-10 shadow-sm sm:p-16">
+        <div className="absolute right-6 top-6 hidden sm:block">
+          <ShareWidget auditId={result.id} />
+        </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16">
           <div className="flex flex-col items-center">
             <h2 className="mb-2 text-sm font-semibold uppercase tracking-widest text-slate-500">
@@ -111,7 +121,7 @@ export function AuditResults({ formData }: AuditResultsProps) {
             </div>
           </div>
         </div>
-        
+
         {totalMonthlySavings < 100 && (
           <div className="mt-10 flex items-center gap-2 rounded-full bg-emerald-50 px-5 py-2 text-base font-bold text-emerald-700 border border-emerald-200 shadow-sm">
             <CheckCircle2 size={18} />
@@ -212,7 +222,7 @@ export function AuditResults({ formData }: AuditResultsProps) {
           {toolResults.map((tr, idx) => {
             const displayName = TOOL_DISPLAY_NAMES[tr.toolName] || tr.toolName;
             const theme = getSemanticTheme(tr.recommendationType);
-            
+
             return (
               <article
                 key={`${tr.toolName}-${idx}`}
@@ -247,9 +257,26 @@ export function AuditResults({ formData }: AuditResultsProps) {
         </div>
       </section>
 
-      {/* ── Lead Capture ────────────────────────────────────────────────────── */}
+      {/* ── Lead Capture or Viral CTA ───────────────────────────────────────── */}
       <section className="pt-4">
-        <LeadCapture auditId={result.id} auditData={result} />
+        {preCalculatedResult ? (
+          <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+            <h3 className="mb-4 text-2xl font-bold text-slate-900">
+              Want to see where your team is overspending?
+            </h3>
+            <p className="mb-8 text-slate-500 max-w-lg mx-auto">
+              Run a free AI infrastructure audit for your startup and get a personalized, defensible breakdown of exactly where you can cut costs.
+            </p>
+            <a 
+              href="/"
+              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-blue-700"
+            >
+              Audit My Stack
+            </a>
+          </div>
+        ) : (
+          <LeadCapture auditId={result.id} auditData={result} />
+        )}
       </section>
     </div>
   );
