@@ -3,6 +3,7 @@ import { runAudit } from '@/lib/auditEngine';
 import type { AuditFormData, RecommendationType } from '@/lib/types';
 import { TOOL_DISPLAY_NAMES } from '@/lib/pricingData';
 import { CheckCircle2, TrendingDown, AlertCircle, ArrowRight, Building2, Trash2, ArrowDownRight, Eye, CheckCircle, Loader2 } from 'lucide-react';
+import { LeadCapture } from '@/components/LeadCapture';
 
 function getSemanticTheme(type: RecommendationType) {
   switch (type) {
@@ -244,6 +245,11 @@ export function AuditResults({ formData }: AuditResultsProps) {
             );
           })}
         </div>
+      </section>
+
+      {/* ── Lead Capture ────────────────────────────────────────────────────── */}
+      <section className="pt-4">
+        <LeadCapture auditId={result.id} auditData={result} />
       </section>
     </div>
   );
