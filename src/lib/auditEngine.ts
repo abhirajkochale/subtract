@@ -15,7 +15,6 @@
 import type {
   AuditFormData,
   AuditResult,
-  RecommendationType,
   ToolAuditResult,
   ToolInput,
   ToolName,
@@ -53,26 +52,10 @@ function getPublishedPricePerSeat(tool: ToolInput): number | null {
 }
 
 /**
- * Finds the cheapest plan on `toolName` that has a fixed seat price.
- * Returns `null` if the tool is purely usage-based.
- */
-function getCheapestPlan(
-  toolName: ToolName,
-): { name: string; monthlyPerSeat: number } | null {
-  const plans = PRICING[toolName].plans;
-  for (const plan of plans) {
-    if (plan.monthlyPerSeat !== null) {
-      return { name: plan.name, monthlyPerSeat: plan.monthlyPerSeat };
-    }
-  }
-  return null;
-}
-
-/**
  * Returns true when the team's use-case overlaps with the tool's primary uses.
  * 'mixed' use-case always overlaps with every tool.
  */
-function useCaseMatches(toolName: ToolName, useCase: string): boolean {
+function matchesUseCase(toolName: ToolName, useCase: string): boolean {
   if (useCase === 'mixed') return true;
   return TOOL_CAPABILITIES[toolName].primaryUse.includes(useCase);
 }
@@ -103,7 +86,7 @@ function findCheaperAlternative(
   for (const toolName of Object.keys(PRICING) as ToolName[]) {
     if (toolName === currentToolName) continue;
     if (excludeTools.has(toolName)) continue;
-    if (!useCaseMatches(toolName, useCase)) continue;
+    if (!matchesUseCase(toolName, useCase)) continue;
 
     // Find the cheapest PAID plan (> $0) appropriate for the team size
     const paidPlans = PRICING[toolName].plans.filter(p => {
@@ -281,7 +264,7 @@ function evaluateTool(
   // Minimum saving threshold: $1/mo — ignore trivial price differences
   // (e.g. Gemini $19.99 vs ChatGPT $20 = $0.01) that aren't worth switching for.
   const SWITCH_MIN_SAVING_PER_SEAT = 1;
-  if (publishedPricePerSeat > 0 && useCaseMatches(tool.toolName, useCase)) {
+  if (publishedPricePerSeat > 0 && matchesUseCase(tool.toolName, useCase)) {
     const alternative = findCheaperAlternative(
       tool.toolName,
       publishedPricePerSeat,

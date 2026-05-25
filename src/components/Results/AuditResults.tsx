@@ -4,9 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import { runAudit } from '@/lib/auditEngine';
 import type { AuditFormData, RecommendationType, AuditResult } from '@/lib/types';
 import { TOOL_DISPLAY_NAMES } from '@/lib/pricingData';
-import { CheckCircle2, TrendingDown, AlertCircle, ArrowRight, Building2, Trash2, ArrowDownRight, Eye, CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowRight, Building2, Trash2, ArrowDownRight, Eye, CheckCircle } from 'lucide-react';
 import { LeadCapture } from '@/components/LeadCapture';
 import { ShareWidget } from './ShareWidget';
+import Link from 'next/link';
 
 function getSemanticTheme(type: RecommendationType) {
   switch (type) {
@@ -49,22 +50,16 @@ export function AuditResults({ formData, preCalculatedResult }: AuditResultsProp
   // Otherwise, run the engine on the formData.
   const result = preCalculatedResult || (formData ? runAudit(formData) : null);
 
-  if (!result) return null;
-
-  const { totalMonthlySavings, totalAnnualSavings, toolResults, formData: finalFormData } = result;
-
-  const hasAnomalies = toolResults.some(tr =>
-    tr.reason.toLowerCase().includes('anomaly') ||
-    tr.recommendedAction.toLowerCase().includes('audit your')
-  );
-
   const [summary, setSummary] = useState<string | null>(null);
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
   const fetched = useRef(false);
 
   useEffect(() => {
+    if (!result) return;
     if (fetched.current) return;
     fetched.current = true;
+
+    const { totalMonthlySavings, toolResults, formData: finalFormData } = result;
 
     async function fetchSummary() {
       try {
@@ -89,7 +84,16 @@ export function AuditResults({ formData, preCalculatedResult }: AuditResultsProp
     }
 
     fetchSummary();
-  }, [finalFormData.teamSize, finalFormData.useCase, totalMonthlySavings, toolResults]);
+  }, [result]);
+
+  if (!result) return null;
+
+  const { totalMonthlySavings, totalAnnualSavings, toolResults } = result;
+
+  const hasAnomalies = toolResults.some(tr => 
+    tr.reason.toLowerCase().includes('anomaly') || 
+    tr.recommendedAction.toLowerCase().includes('audit your')
+  );
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 pb-20 pt-8">
@@ -267,12 +271,12 @@ export function AuditResults({ formData, preCalculatedResult }: AuditResultsProp
             <p className="mb-8 text-slate-500 max-w-lg mx-auto">
               Run a free AI infrastructure audit for your startup and get a personalized, defensible breakdown of exactly where you can cut costs.
             </p>
-            <a 
+            <Link 
               href="/"
               className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-blue-700"
             >
               Audit My Stack
-            </a>
+            </Link>
           </div>
         ) : (
           <LeadCapture auditId={result.id} auditData={result} />
