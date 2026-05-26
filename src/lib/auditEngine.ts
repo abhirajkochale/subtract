@@ -189,7 +189,7 @@ function evaluateTool(
       return {
         toolName: tool.toolName,
         currentSpend: tool.monthlySpend,
-        recommendationType: 'keep',
+        recommendationType: 'already-optimal',
         recommendedAction: `Continue using ${displayName}`,
         savings: 0,
         annualSavings: 0,
