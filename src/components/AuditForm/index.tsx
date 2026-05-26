@@ -20,7 +20,7 @@
  * - Focus is managed to the first new tool row after "Add Tool".
  */
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlusCircle, Sparkles, RotateCcw } from 'lucide-react';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
@@ -77,6 +77,14 @@ export function SpendInputForm() {
     toAuditFormData,
     reset,
   } = useFormPersistence();
+
+  // Local state lets the user backspace the input entirely without it forcefully resetting to 0/1 mid-type.
+  const [localTeamSize, setLocalTeamSize] = useState(teamSize.toString());
+
+  // Sync external updates back to local state (e.g. if form resets or hydrates)
+  useEffect(() => {
+    setLocalTeamSize(teamSize.toString());
+  }, [teamSize]);
 
   /** Ref to the last tool row so we can focus it after adding. */
   const lastRowRef = useRef<HTMLElement | null>(null);
@@ -219,8 +227,13 @@ export function SpendInputForm() {
               type="number"
               min={1}
               step={1}
-              value={teamSize}
-              onChange={e => setTeamSize(parseInt(e.target.value, 10) || 1)}
+              value={localTeamSize}
+              onChange={e => {
+                const val = e.target.value;
+                setLocalTeamSize(val);
+                const num = parseInt(val, 10);
+                setTeamSize(isNaN(num) ? 0 : Math.max(0, num));
+              }}
               required
               aria-describedby="team-size-hint"
               className="h-9 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 shadow-sm transition-all duration-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"

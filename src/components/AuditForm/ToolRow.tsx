@@ -11,6 +11,7 @@
  * - The delete button carries an aria-label with the tool name for context.
  */
 
+import { useState, useEffect } from 'react';
 import { Trash2 } from 'lucide-react';
 import type { FormToolEntry, FormToolUpdate } from '@/hooks/useFormPersistence';
 
@@ -71,6 +72,19 @@ export function ToolRow({ entry, index, onUpdate, onRemove }: ToolRowProps) {
   const displayName = entry.toolName
     ? (TOOL_DISPLAY_NAMES[entry.toolName] ?? entry.toolName)
     : `Tool ${index + 1}`;
+
+  // Local state lets the user backspace the input entirely without it forcefully resetting to 0/1 mid-type.
+  const [localSeats, setLocalSeats] = useState(entry.seats.toString());
+  const [localSpend, setLocalSpend] = useState(entry.monthlySpend.toString());
+
+  // Sync external updates back to local state (e.g. if another component resets the form)
+  useEffect(() => {
+    setLocalSeats(entry.seats.toString());
+  }, [entry.seats]);
+
+  useEffect(() => {
+    setLocalSpend(entry.monthlySpend.toString());
+  }, [entry.monthlySpend]);
 
   function handleToolChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const newTool = e.target.value;
@@ -149,8 +163,13 @@ export function ToolRow({ entry, index, onUpdate, onRemove }: ToolRowProps) {
           type="number"
           min={1}
           step={1}
-          value={entry.seats}
-          onChange={e => onUpdate(entry.id, { seats: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+          value={localSeats}
+          onChange={e => {
+            const val = e.target.value;
+            setLocalSeats(val);
+            const num = parseInt(val, 10);
+            onUpdate(entry.id, { seats: isNaN(num) ? 0 : Math.max(0, num) });
+          }}
           required
           className="h-9 rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-900 shadow-sm transition-all duration-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
         />
@@ -177,8 +196,13 @@ export function ToolRow({ entry, index, onUpdate, onRemove }: ToolRowProps) {
             type="number"
             min={0}
             step={0.01}
-            value={entry.monthlySpend}
-            onChange={e => onUpdate(entry.id, { monthlySpend: parseFloat(e.target.value) || 0 })}
+            value={localSpend}
+            onChange={e => {
+              const val = e.target.value;
+              setLocalSpend(val);
+              const num = parseFloat(val);
+              onUpdate(entry.id, { monthlySpend: isNaN(num) ? 0 : Math.max(0, num) });
+            }}
             required
             className="h-9 w-full rounded-md border border-slate-200 bg-white pl-6 pr-2.5 text-sm text-slate-900 shadow-sm transition-all duration-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
           />
