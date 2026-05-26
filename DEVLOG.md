@@ -52,3 +52,10 @@ Following the strict "Pricing data accuracy matters" ground rule, I also conduct
 **What I learned:** In Next.js 15+, dynamic route properties like `params` must be explicitly `await`ed as Promises. I also learned that sharing a React Server Component with client components requires strictly bubbling up the `'use client'` directive to prevent hydration mismatch build errors.
 **Blockers / what I'm stuck on:** Hit a 500 Internal Server Error when testing the live form due to a PostgreSQL foreign key constraint violation. Unblocked this by running an `upsert` on the `audits` table immediately before inserting the lead.
 **Plan for tomorrow:** Final deployment day! I will shift completely from engineering to product documentation: calculating unit economics (`ECONOMICS.md`), writing the GTM strategy, the Twitter thread launch copy, and the `ARCHITECTURE.md` Mermaid diagram. Then, I will deploy to Vercel and submit!
+
+## Day 7 2026-05-26
+**Hours worked:** 3
+**What I did:** Executed a massive rubric compliance sweep. I dynamically wired the Open Graph meta tags to use the actual saved $ amounts for Twitter previews (enabling the viral loop), added conditional low-spend CTA text to `LeadCapture`, and built out the "Apply for Cloud AI Credits" logic for API tools costing >$500. I also authored the remaining documentation (`GTM.md`, `ECONOMICS.md`, `METRICS.md`, etc.), ensuring the exact required topics (e.g., Unfair Distribution Channels) were covered. Finally, I documented my Honeypot abuse-protection strategy in `ARCHITECTURE.md` and prepared the repo for final grading.
+**What I learned:** I learned that true viral loops require personalization. Hardcoding OG tags is easy, but fetching the specific db row in Next.js Server Components to inject `"We're wasting $1,200/mo"` into the Twitter card title is what actually drives clicks.
+**Blockers / what I'm stuck on:** Navigating PowerShell syntax while running batch Git commits (used sequential commands instead).
+**Plan for tomorrow:** Submit the Round 1 Google Form!

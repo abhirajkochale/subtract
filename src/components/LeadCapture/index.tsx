@@ -80,14 +80,19 @@ export function LeadCapture({ auditId, auditData }: LeadCaptureProps) {
     );
   }
 
+  const totalSavings = auditData?.totalMonthlySavings || 0;
+  const isOptimal = totalSavings < 100 || auditData?.isOptimal;
+
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
       <div className="bg-slate-900 px-6 py-8 text-center text-white sm:px-10 sm:py-10">
         <h2 className="mb-2 text-2xl font-extrabold tracking-tight">
-          Want expert help implementing these savings?
+          {isOptimal ? "You're spending well." : "Want expert help implementing these savings?"}
         </h2>
         <p className="mx-auto max-w-xl text-slate-400 text-sm">
-          Drop your email below and the Credex team will help you automatically negotiate vendor discounts without disrupting your engineering workflows.
+          {isOptimal 
+            ? "Your AI stack is already highly optimized. Drop your email below and we'll notify you when new vendor discounts or optimization strategies apply to your stack."
+            : "Drop your email below and the Credex team will help you automatically negotiate vendor discounts without disrupting your engineering workflows."}
         </p>
       </div>
 
@@ -193,7 +198,7 @@ export function LeadCapture({ auditId, auditData }: LeadCaptureProps) {
               </>
             ) : (
               <>
-                Get Expert Help <ArrowRight size={18} />
+                {isOptimal ? 'Notify Me' : 'Get Expert Help'} <ArrowRight size={18} />
               </>
             )}
           </button>

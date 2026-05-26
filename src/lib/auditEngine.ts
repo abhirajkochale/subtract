@@ -175,18 +175,29 @@ function evaluateTool(
   // ── Usage-based tools (monthlyPerSeat === null) ──────────────────────────
   // We cannot compare seat costs, so we simply flag the spend for review.
   if (publishedPricePerSeat === null) {
-    return {
-      toolName: tool.toolName,
-      currentSpend: tool.monthlySpend,
-      recommendationType: 'flag',
-      recommendedAction: `Review ${displayName} API spend`,
-      savings: 0,
-      annualSavings: 0,
-      reason:
-        `${displayName} uses usage-based (pay-per-token) billing. ` +
-        `SubTract cannot automatically compare this against seat-based plans. ` +
-        `Review your invoice to ensure spend is justified.`,
-    };
+    if (tool.monthlySpend > 500) {
+      return {
+        toolName: tool.toolName,
+        currentSpend: tool.monthlySpend,
+        recommendationType: 'flag',
+        recommendedAction: `Apply for Cloud AI Credits`,
+        savings: Math.round(tool.monthlySpend * 100) / 100,
+        annualSavings: Math.round(tool.monthlySpend * 12 * 100) / 100,
+        reason: `You are paying retail ($${tool.monthlySpend}/mo) for ${displayName}. Startups can often secure $250k+ in free AI credits via AWS/Google/Microsoft. Let Credex help you apply for these instead of paying out of pocket.`,
+      };
+    } else {
+      return {
+        toolName: tool.toolName,
+        currentSpend: tool.monthlySpend,
+        recommendationType: 'keep',
+        recommendedAction: `Continue using ${displayName}`,
+        savings: 0,
+        annualSavings: 0,
+        reason:
+          `${displayName} uses usage-based (pay-per-token) billing. ` +
+          `Your spend is reasonable. SubTract cannot automatically compare this against seat-based plans.`,
+      };
+    }
   }
 
   const expectedMonthlySpend = publishedPricePerSeat * tool.seats;

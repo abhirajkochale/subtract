@@ -22,18 +22,26 @@ export async function generateMetadata({ params }: ResultsPageProps): Promise<Me
     };
   }
 
+  const audit = data.audit_data;
+  const savings = audit.totalMonthlySavings || 0;
+  const teamSize = audit.formData?.teamSize || 1;
+  const formattedSavings = savings.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+  const title = `We're wasting $${formattedSavings}/mo on AI tools`;
+  const description = `I just audited our ${teamSize}-person engineering team's AI tech stack and found $${formattedSavings} in monthly savings. Click to see the exact breakdown.`;
+
   return {
-    title: 'AI Spend Audit | Immediate savings found',
-    description: 'View your team\'s AI stack optimization report and immediate savings opportunities.',
+    title,
+    description,
     openGraph: {
-      title: 'AI Spend Audit | Immediate savings found',
-      description: 'View your team\'s AI stack optimization report and immediate savings opportunities.',
+      title,
+      description,
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'AI Spend Audit | Immediate savings found',
-      description: 'View your team\'s AI stack optimization report and immediate savings opportunities.',
+      title,
+      description,
     },
   };
 }
