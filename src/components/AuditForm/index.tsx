@@ -120,9 +120,7 @@ export function SpendInputForm() {
   );
 
   const handleReset = useCallback(() => {
-    if (window.confirm('Reset your entire audit? This cannot be undone.')) {
-      reset();
-    }
+    reset();
   }, [reset]);
 
   // ── Hydration guard (after all hooks) ────────────────────────────────────
