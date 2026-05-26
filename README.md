@@ -3,7 +3,7 @@
 **A free AI infrastructure audit tool for high-growth startups.**
 SubTract scans your engineering team's tech stack (Cursor, Copilot, ChatGPT, etc.) and instantly calculates how much money you are wasting on duplicate subscriptions and ghost seats.
 
-> 🚀 **Live Demo:** [Insert Vercel URL Here]
+> 🚀 **Live Demo:** https://subtract-gilt.vercel.app/
 > 📺 **Video Walkthrough:** [Insert Loom URL Here]
 
 ## 🛠️ The Tech Stack

@@ -35,3 +35,20 @@ The most surprising insight was how different enterprise AI provisioning is comp
 This conversation completely changed my GTM strategy and my tool's error handling. 
 First, it proved SubTract should not target Enterprise giants like Grab (who have pool licenses), but rather Series A/B startups who rely on decentralized corporate credit cards where Ghost Seats thrive. 
 Second, he mentioned non-devs use an internal wrapper ("GrabGPT") for daily tasks. This validated my design decision in the Audit Engine to categorize API-direct tools as a "Review/Flag" rather than trying to calculate per-seat downgrades, since API spend powers these internal company tools.
+
+## Interview 3: The Freelancer / Student
+**Name:** Kshitij Parkhe
+**Role:** 3rd Year College Student & Freelancer
+**Company Stage:** Independent / Solo
+**Date:** May 26, 2026
+
+### 3+ Direct Quotes:
+1. *"Honestly, the biggest headache isn't hitting feature limits—it's the constant friction of hitting credit walls when I'm in the middle of a build."*
+2. *"If a company hired me, I’d absolutely expect them to provide a Pro license. Development today is all about velocity, and at a professional level, speed is worth way more than the cost of a subscription."*
+3. *"I guess the embed feature [is useless for a solo dev]."*
+
+### The most surprising thing they said:
+The most surprising thing was how he framed the difference between personal hacking and professional work. As a freelancer/student, he views Pro AI plans as an unjustifiable luxury compared to tuition, resulting in "constant friction." Yet, he immediately assumes that any professional company *not* providing a Pro license is making a terrible business mistake because "speed is worth way more than the cost." 
+
+### What it changed about my design/strategy:
+This perfectly validated the entire premise of Credex. Developers expect companies to pay for their AI tools to maintain velocity, which is why companies blindly pay for them without auditing the ROI. Kshitij's comment about the "embed feature" being useless for solo devs also validated the B2B focus of the app. It confirmed that the viral loop (sharing reports) is inherently a B2B network effect; it works when managers share it with other managers, not when solo developers share it with each other.
