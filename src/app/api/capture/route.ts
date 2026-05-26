@@ -51,29 +51,40 @@ export async function POST(request: Request) {
       throw new Error(`DB Error: ${dbError.message}`);
     }
 
-    // Transactional Email
-    const { error: emailError } = await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: email,
-      subject: 'Your AI Spend Audit Results',
-      html: `
-        <div style="font-family: sans-serif; color: #0f172a; max-w: 600px; margin: 0 auto;">
-          <h2>Thanks for using the Credex AI Auditor!</h2>
-          <p>We've successfully received your AI spend audit submission.</p>
-          <p>Our team is reviewing your optimized stack, and we will reach out shortly to discuss how Credex can help you negotiate these vendor discounts automatically.</p>
-          <br />
-          <p>Best regards,</p>
-          <p><strong>The Credex Team</strong></p>
-        </div>
-      `,
-    });
+    // Transactional Email (best-effort — Resend free tier only sends to verified addresses)
+    let emailSent = false;
+    try {
+      const { error: emailError } = await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: email,
+        subject: 'Your AI Spend Audit Results',
+        html: `
+          <div style="font-family: sans-serif; color: #0f172a; max-width: 600px; margin: 0 auto;">
+            <h2>Thanks for using the Credex AI Auditor!</h2>
+            <p>We've successfully received your AI spend audit submission.</p>
+            <p>Our team is reviewing your optimized stack, and we will reach out shortly to discuss how Credex can help you negotiate these vendor discounts automatically.</p>
+            <br />
+            <p>Best regards,</p>
+            <p><strong>The Credex Team</strong></p>
+          </div>
+        `,
+      });
 
-    if (emailError) {
-      console.error('Resend email error:', emailError);
-      throw new Error(`Email Error: ${emailError.message}`);
+      if (emailError) {
+        console.warn('Resend email warning (non-blocking):', emailError.message);
+      } else {
+        emailSent = true;
+      }
+    } catch (emailCatchError) {
+      console.warn('Email delivery skipped (Resend free-tier restriction):', emailCatchError);
     }
 
-    return NextResponse.json({ success: true, message: 'Data saved and email sent successfully.' }, { status: 200 });
+    return NextResponse.json({
+      success: true,
+      message: emailSent
+        ? 'Lead saved and email sent successfully.'
+        : 'Lead saved successfully. Email delivery skipped (Resend free-tier restriction — verify a custom domain at resend.com/domains to enable sending to all addresses).',
+    }, { status: 200 });
   } catch (error: any) {
     console.error('API /capture error:', error);
     return NextResponse.json(

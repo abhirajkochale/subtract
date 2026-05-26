@@ -21,6 +21,7 @@ export function LeadCapture({ auditId, auditData }: LeadCaptureProps) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,6 +54,7 @@ export function LeadCapture({ auditId, auditData }: LeadCaptureProps) {
         throw new Error(data.error || 'Failed to submit form');
       }
 
+      setSuccessMessage(data.message || 'Your information has been saved.');
       setIsSuccess(true);
     } catch (err: any) {
       console.error('Lead capture error:', err);
@@ -71,8 +73,8 @@ export function LeadCapture({ auditId, auditData }: LeadCaptureProps) {
         <h3 className="mb-2 text-xl font-bold text-slate-900">
           Request Received
         </h3>
-        <p className="text-sm text-slate-500">
-          Thank you! Our team will reach out shortly to discuss your audit results and optimization opportunities.
+        <p className="text-sm text-slate-500 max-w-md">
+          {successMessage}
         </p>
       </div>
     );

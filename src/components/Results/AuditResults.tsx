@@ -167,6 +167,7 @@ export function AuditResults({ formData, preCalculatedResult }: AuditResultsProp
             </div>
             <button
               type="button"
+              onClick={() => document.getElementById('lead-capture')?.scrollIntoView({ behavior: 'smooth' })}
               className="flex whitespace-nowrap items-center gap-2 rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Get Expert Help <ArrowRight size={16} />
@@ -262,7 +263,7 @@ export function AuditResults({ formData, preCalculatedResult }: AuditResultsProp
       </section>
 
       {/* ── Lead Capture or Viral CTA ───────────────────────────────────────── */}
-      <section className="pt-4">
+      <section id="lead-capture" className="pt-4">
         {preCalculatedResult ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm">
             <h3 className="mb-4 text-2xl font-bold text-slate-900">
