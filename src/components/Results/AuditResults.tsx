@@ -7,6 +7,8 @@ import { TOOL_DISPLAY_NAMES } from '@/lib/pricingData';
 import { CheckCircle2, AlertCircle, ArrowRight, Building2, Trash2, ArrowDownRight, Eye, CheckCircle } from 'lucide-react';
 import { LeadCapture } from '@/components/LeadCapture';
 import { ShareWidget } from './ShareWidget';
+import { PdfExport } from './PdfExport';
+import { Benchmark } from './Benchmark';
 import Link from 'next/link';
 
 function getSemanticTheme(type: RecommendationType) {
@@ -89,8 +91,10 @@ export function AuditResults({ formData, preCalculatedResult }: AuditResultsProp
   if (!result) return null;
 
   const { totalMonthlySavings, totalAnnualSavings, toolResults } = result;
+  const teamSize = result.formData?.teamSize || 0;
+  const totalMonthlySpend = toolResults.reduce((sum: number, tr: { currentSpend: number }) => sum + tr.currentSpend, 0);
 
-  const hasAnomalies = toolResults.some(tr => 
+  const hasAnomalies = toolResults.some((tr: { reason: string; recommendedAction: string }) => 
     tr.reason.toLowerCase().includes('anomaly') || 
     tr.recommendedAction.toLowerCase().includes('audit your')
   );
@@ -99,7 +103,8 @@ export function AuditResults({ formData, preCalculatedResult }: AuditResultsProp
     <div className="mx-auto w-full max-w-5xl space-y-8 pb-20 pt-8">
       {/* ── Hero Section ───────────────────────────────────────────────────── */}
       <section className="relative flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-10 shadow-sm sm:p-16">
-        <div className="absolute right-6 top-6 hidden sm:block">
+        <div className="absolute right-6 top-6 hidden sm:flex gap-2">
+          <PdfExport />
           <ShareWidget auditId={result.id} />
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16">
@@ -149,6 +154,15 @@ export function AuditResults({ formData, preCalculatedResult }: AuditResultsProp
           </p>
         )}
       </section>
+
+      {/* ── Benchmark Mode ─────────────────────────────────────────────────── */}
+      {teamSize > 0 && (
+        <Benchmark
+          totalMonthlySpend={totalMonthlySpend}
+          totalMonthlySavings={totalMonthlySavings}
+          teamSize={teamSize}
+        />
+      )}
 
       {/* ── Conditional CTA ────────────────────────────────────────────────── */}
       {totalMonthlySavings > 500 && (

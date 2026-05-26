@@ -128,3 +128,32 @@
     @apply font-sans;
   }
 }
+
+/* ── Print styles for PDF export ──────────────────────────────────────────── */
+@media print {
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide interactive elements */
+  .print\\:hidden,
+  button,
+  nav,
+  footer,
+  form {
+    display: none !important;
+  }
+
+  /* Remove shadows and borders for cleaner PDF */
+  section {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  /* Ensure cards don't break across pages */
+  article {
+    break-inside: avoid;
+  }
+}
