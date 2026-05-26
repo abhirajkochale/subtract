@@ -76,15 +76,15 @@ export function SpendInputForm() {
     setPrimaryUseCase,
     toAuditFormData,
     reset,
-  } = useFormPersistence();
-
   // Local state lets the user backspace the input entirely without it forcefully resetting to 0/1 mid-type.
   const [localTeamSize, setLocalTeamSize] = useState(teamSize.toString());
+  const [prevTeamSize, setPrevTeamSize] = useState(teamSize);
 
-  // Sync external updates back to local state (e.g. if form resets or hydrates)
-  useEffect(() => {
+  // Sync external updates back to local state during render (avoids useEffect lint errors and extra renders)
+  if (teamSize !== prevTeamSize) {
+    setPrevTeamSize(teamSize);
     setLocalTeamSize(teamSize.toString());
-  }, [teamSize]);
+  }
 
   /** Ref to the last tool row so we can focus it after adding. */
   const lastRowRef = useRef<HTMLElement | null>(null);

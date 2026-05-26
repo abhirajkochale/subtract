@@ -75,16 +75,20 @@ export function ToolRow({ entry, index, onUpdate, onRemove }: ToolRowProps) {
 
   // Local state lets the user backspace the input entirely without it forcefully resetting to 0/1 mid-type.
   const [localSeats, setLocalSeats] = useState(entry.seats.toString());
-  const [localSpend, setLocalSpend] = useState(entry.monthlySpend.toString());
+  const [prevSeats, setPrevSeats] = useState(entry.seats);
 
-  // Sync external updates back to local state (e.g. if another component resets the form)
-  useEffect(() => {
+  if (entry.seats !== prevSeats) {
+    setPrevSeats(entry.seats);
     setLocalSeats(entry.seats.toString());
-  }, [entry.seats]);
+  }
 
-  useEffect(() => {
+  const [localSpend, setLocalSpend] = useState(entry.monthlySpend.toString());
+  const [prevSpend, setPrevSpend] = useState(entry.monthlySpend);
+
+  if (entry.monthlySpend !== prevSpend) {
+    setPrevSpend(entry.monthlySpend);
     setLocalSpend(entry.monthlySpend.toString());
-  }, [entry.monthlySpend]);
+  }
 
   function handleToolChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const newTool = e.target.value;
