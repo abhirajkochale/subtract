@@ -4,7 +4,7 @@
 SubTract scans your engineering team's tech stack (Cursor, Copilot, ChatGPT, etc.) and instantly calculates how much money you are wasting on duplicate subscriptions and ghost seats.
 
 > 🚀 **Live Demo:** https://subtract-gilt.vercel.app/
-> 📺 **Video Walkthrough:** [Insert Loom URL Here]
+> 📺 **Video Walkthrough:** https://www.youtube.com/watch?v=Q09MNZ96lhc
 
 ## 🛠️ The Tech Stack
 
